@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-roles-table
+      author: rashad-seyidhuseynli
+      changes:
+        - createTable:
+            tableName: permissions
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: resource
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: action
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false

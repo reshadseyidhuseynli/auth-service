@@ -1,10 +1,9 @@
-package com.example.auth_service.security.service;
+package com.example.auth_service.security.jwt;
 
-import com.example.auth_service.entity.User;
-import com.example.auth_service.security.property.JwtProperty;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -15,12 +14,12 @@ public class AccessTokenService {
 
     private final JwtProperty jwtProperty;
 
-    public String generateAccessToken(User user) {
+    public String generateAccessToken(UserDetails user) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + jwtProperty.getAccessTokenExpiration());
 
         return Jwts.builder()
-                .subject(String.valueOf(user.getEmail()))
+                .subject(String.valueOf(user.getUsername()))
                 .issuedAt(now)
                 .expiration(exp)
                 .signWith(jwtProperty.getKey())

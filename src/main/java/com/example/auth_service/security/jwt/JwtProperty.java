@@ -1,4 +1,4 @@
-package com.example.auth_service.security.property;
+package com.example.auth_service.security.jwt;
 
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

@@ -35,7 +35,18 @@ databaseChangeLog:
                     nullable: false
                     unique: true
               - column:
+                  name: status
+                  type: VARCHAR(25)
+                  constraints:
+                    nullable: false
+              - column:
                   name: role_id
                   type: BIGINT
                   constraints:
                     nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_users_roles
+            baseTableName: users
+            baseColumnNames: role_id
+            referencedTableName: roles
+            referencedColumnNames: id

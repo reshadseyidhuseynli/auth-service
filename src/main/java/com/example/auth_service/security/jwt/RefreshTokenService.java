@@ -1,10 +1,9 @@
-package com.example.auth_service.security.service;
+package com.example.auth_service.security.jwt;
 
-import com.example.auth_service.entity.User;
-import com.example.auth_service.security.property.JwtProperty;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -15,13 +14,13 @@ public class RefreshTokenService {
 
     private final JwtProperty jwtProperty;
 
-    public String generateRefreshToken(User user, boolean rememberMe) {
+    public String generateRefreshToken(UserDetails user, boolean rememberMe) {
         Date now = new Date();
         long refreshTokenExpiration = rememberMe ? jwtProperty.getRefreshTokenExpiration() * 30L : jwtProperty.getRefreshTokenExpiration();
         Date exp = new Date(now.getTime() + refreshTokenExpiration);
 
         return Jwts.builder()
-                .subject(String.valueOf(user.getEmail()))
+                .subject(String.valueOf(user.getUsername()))
                 .issuedAt(now)
                 .expiration(exp)
                 .claim("type", "REFRESH_TOKEN")
