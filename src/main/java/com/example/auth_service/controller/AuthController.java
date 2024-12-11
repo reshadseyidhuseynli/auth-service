@@ -15,14 +15,14 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @PostMapping("/sign-up")
+    public LoginResponse signUp(@RequestBody SignUpRequest request) {
+        return authService.signUp(request);
+    }
+
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest request) {
         return authService.login(request);
-    }
-
-    @PostMapping("/sign-up")
-    public void signUp(@RequestBody SignUpRequest request) {
-        authService.signUp(request);
     }
 
     @PostMapping("refresh-token")

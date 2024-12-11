@@ -7,10 +7,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
-public class AccessTokenService {
+public class AccessTokenManager {
 
     private final JwtProperty jwtProperty;
 
@@ -24,6 +25,24 @@ public class AccessTokenService {
                 .expiration(exp)
                 .signWith(jwtProperty.getKey())
                 .compact();
+    }
+
+    public boolean isValid(String token, UserDetails userDetails) {
+        boolean isExpired = extractExpirationFromAccessToken(token).before(new Date());
+        return !isExpired && extractUsernameFromAccessToken(token).equals(userDetails.getUsername());
+    }
+
+    public String extractUsernameFromAccessToken(String token) {
+        return extractClaimFromAccessToken(token, Claims::getSubject);
+    }
+
+    public Date extractExpirationFromAccessToken(String token) {
+        return extractClaimFromAccessToken(token, Claims::getExpiration);
+    }
+
+    public <T> T extractClaimFromAccessToken(String token, Function<Claims, T> function) {
+        Claims claims = extractAllClaimsFromAccessToken(token);
+        return function.apply(claims);
     }
 
     public Claims extractAllClaimsFromAccessToken(String token) {

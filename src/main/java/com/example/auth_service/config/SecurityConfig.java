@@ -1,6 +1,7 @@
 package com.example.auth_service.config;
 
 import com.example.auth_service.security.AuthenticationFilter;
+import com.example.auth_service.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -8,21 +9,30 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(UserService userService) {
+        return userService::findByEmail;
     }
 
     @Bean
@@ -38,14 +48,16 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
             throws Exception {
-
         return authConfig.getAuthenticationManager();
     }
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   AuthenticationFilter authFilter,
-                                                   AuthenticationEntryPoint entryPoint)
-            throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            AuthenticationFilter authFilter,
+            AuthenticationEntryPoint entryPoint,
+            LogoutHandler logoutHandler
+    ) throws Exception {
         http
 //                .authorizeHttpRequests(
 //                        request -> request
@@ -64,7 +76,15 @@ public class SecurityConfig {
                 .exceptionHandling(
                         exception -> exception.authenticationEntryPoint(entryPoint))
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .logout(httpSecurityLogoutConfigurer ->
+                        httpSecurityLogoutConfigurer
+                                .addLogoutHandler(logoutHandler)
+                                .logoutSuccessHandler(
+                                        (request, response, authentication) ->
+                                                SecurityContextHolder.clearContext()
+                                )
+                                .logoutSuccessUrl("/api/v1/auth/logout"));
 
         return http.build();
     }

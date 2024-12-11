@@ -1,4 +1,4 @@
-package com.example.auth_service.entity;
+package com.example.auth_service.model.entity;
 
 import com.example.auth_service.model.enums.UserStatus;
 import jakarta.persistence.*;
@@ -28,7 +28,7 @@ public class User implements UserDetails {
     private String password;
 
     @Column(name = "email", nullable = false, unique = true)
-    private String username;
+    private String email;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
@@ -41,6 +41,16 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.getName()));
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 
 }
