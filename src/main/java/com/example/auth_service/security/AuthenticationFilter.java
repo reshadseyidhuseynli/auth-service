@@ -1,7 +1,7 @@
 package com.example.auth_service.security;
 
-import com.example.auth_service.security.jwt.AccessTokenManager;
-import com.example.auth_service.security.jwt.TokenService;
+import com.example.auth_service.security.jwt.JwtService;
+import com.example.auth_service.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +22,7 @@ import java.io.IOException;
 public class AuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
-    private final AccessTokenManager tokenManager;
+    private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
     @Override
@@ -39,12 +39,12 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         }
 
         final String token = header.substring(7);
-        String username = tokenManager.extractUsernameFromAccessToken(token);
+        String username = jwtService.extractUsernameFromToken(token);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (tokenManager.isValid(token, userDetails)
-                    && tokenService.findByToken(token).getIsValid()) {
+            jwtService.checkTokenValidity(token, userDetails);
+            if (tokenService.findByToken(token).getIsValid()) {
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -52,5 +52,6 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
+        filterChain.doFilter(request, response);
     }
 }

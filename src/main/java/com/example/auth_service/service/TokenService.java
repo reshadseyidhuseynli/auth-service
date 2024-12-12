@@ -1,4 +1,4 @@
-package com.example.auth_service.security.jwt;
+package com.example.auth_service.service;
 
 import com.example.auth_service.model.entity.Token;
 import com.example.auth_service.repository.TokenRepository;

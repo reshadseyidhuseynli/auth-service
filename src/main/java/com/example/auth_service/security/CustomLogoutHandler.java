@@ -1,7 +1,7 @@
 package com.example.auth_service.security;
 
 import com.example.auth_service.model.entity.Token;
-import com.example.auth_service.security.jwt.TokenService;
+import com.example.auth_service.service.TokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

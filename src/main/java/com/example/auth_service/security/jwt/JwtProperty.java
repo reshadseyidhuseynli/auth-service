@@ -17,6 +17,7 @@ public class JwtProperty {
     private String secretKey;
     private Long accessTokenExpiration;
     private Long refreshTokenExpiration;
+    private Integer rememberMeCoefficient;
     private SecretKey key;
 
     @PostConstruct

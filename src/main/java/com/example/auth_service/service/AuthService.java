@@ -1,15 +1,12 @@
 package com.example.auth_service.service;
 
 import com.example.auth_service.model.dto.request.LoginRequest;
-import com.example.auth_service.model.dto.request.RefreshTokenRequest;
 import com.example.auth_service.model.dto.request.SignUpRequest;
 import com.example.auth_service.model.dto.response.LoginResponse;
 import com.example.auth_service.model.entity.Token;
 import com.example.auth_service.model.entity.User;
-import com.example.auth_service.security.jwt.AccessTokenManager;
-import com.example.auth_service.security.jwt.RefreshTokenService;
-import com.example.auth_service.security.jwt.TokenService;
-import io.jsonwebtoken.Claims;
+import com.example.auth_service.security.jwt.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,8 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AccessTokenManager accessTokenManager;
-    private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
     private final TokenService tokenService;
     private final UserService userService;
     private final AuthenticationManager authManager;
@@ -34,24 +30,46 @@ public class AuthService {
         if (userService.checkExistUserByEmail(request.getEmail())) {
             throw new RuntimeException("Account already created with: " + request.getEmail());
         }
+
         request.setPassword(encoder.encode(request.getPassword()));
         User user = userService.createUser(request);
-        return saveTokenAndPrepareLoginResponse(user, false);
+
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user, false);
+
+        saveToken(accessToken, user);
+
+        return prepareLoginResponse(accessToken, refreshToken);
     }
 
     public LoginResponse login(LoginRequest request) {
         authenticate(request);
         User user = userService.findByEmail(request.getUsername());
         invalidateOldTokens(user.getId());
-        return saveTokenAndPrepareLoginResponse(user, request.getRememberMe());
+
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user, request.getRememberMe());
+
+        saveToken(accessToken, user);
+
+        return prepareLoginResponse(accessToken, refreshToken);
     }
 
-    public LoginResponse refreshToken(RefreshTokenRequest request) {
-        Claims claims = refreshTokenService.extractAllClaimsFromRefreshToken(request.getAccessToken());
-        String username = claims.getSubject();
-        User user = userService.findByEmail(username);
-        return saveTokenAndPrepareLoginResponse(user, request.getRememberMe());
+    public LoginResponse refreshToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            throw new RuntimeException("Refresh token doesn't added");
+        }
+        final String refreshToken = header.substring(7);
 
+        String username = jwtService.extractUsernameFromToken(refreshToken);
+        User user = userService.findByEmail(username);
+        jwtService.checkTokenValidity(refreshToken, user);
+
+        String accessToken = jwtService.generateAccessToken(user);
+        invalidateOldTokens(user.getId());
+        saveToken(accessToken, user);
+        return prepareLoginResponse(accessToken,refreshToken);
     }
 
     private void authenticate(LoginRequest request) {
@@ -65,11 +83,7 @@ public class AuthService {
         }
     }
 
-    private LoginResponse saveTokenAndPrepareLoginResponse(User user, boolean rememberMe) {
-        String accessToken = accessTokenManager.generateAccessToken(user);
-        String refreshToken = refreshTokenService.generateRefreshToken(user, rememberMe);
-
-        saveToken(accessToken, user);
+    private LoginResponse prepareLoginResponse(String accessToken, String refreshToken) {
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
