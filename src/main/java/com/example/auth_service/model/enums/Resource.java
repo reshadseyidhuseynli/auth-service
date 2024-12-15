@@ -13,4 +13,8 @@ public enum Resource {
 
     private final String name;
 
+    public String getPermissionName(Action action) {
+        return this.name + ":" + action.getName();
+    }
+
 }

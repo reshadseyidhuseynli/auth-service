@@ -2,6 +2,7 @@ package com.example.auth_service.security;
 
 import com.example.auth_service.security.jwt.JwtService;
 import com.example.auth_service.service.TokenService;
+import com.example.auth_service.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -23,7 +23,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final UserService userService;
 
     @Override
     protected void doFilterInternal(
@@ -42,7 +42,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         String username = jwtService.extractUsernameFromToken(token);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = userService.findByEmail(username);
             jwtService.checkTokenValidity(token, userDetails);
             if (tokenService.findByToken(token).getIsValid()) {
                 Authentication authentication = new UsernamePasswordAuthenticationToken(

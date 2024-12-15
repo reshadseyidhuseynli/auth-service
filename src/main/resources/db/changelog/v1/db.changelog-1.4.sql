@@ -7,8 +7,9 @@ INSERT INTO permissions(id, resource, action) VALUES(6, 'admin', 'insert');
 INSERT INTO permissions(id, resource, action) VALUES(7, 'admin', 'update');
 INSERT INTO permissions(id, resource, action) VALUES(8, 'admin', 'delete');
 
-INSERT INTO roles(id, name) VALUES(1, 'SUPER_ADMIN');
-INSERT INTO roles(id, name) VALUES(2, 'ADMIN');
+INSERT INTO roles(id, name) VALUES(1, 'ROLE_SUPER_ADMIN');
+INSERT INTO roles(id, name) VALUES(2, 'ROLE_ADMIN');
+INSERT INTO roles(id, name) VALUES(3, 'ROLE_USER');
 
 INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 1);
 INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 2);
@@ -19,7 +20,7 @@ INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 6);
 INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 7);
 INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 8);
 
-INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 5);
-INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 6);
-INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 7);
-INSERT INTO roles_permissions(role_id, permission_id) VALUES(1, 8);
+INSERT INTO roles_permissions(role_id, permission_id) VALUES(2, 5);
+INSERT INTO roles_permissions(role_id, permission_id) VALUES(2, 6);
+INSERT INTO roles_permissions(role_id, permission_id) VALUES(2, 7);
+INSERT INTO roles_permissions(role_id, permission_id) VALUES(2, 8);
